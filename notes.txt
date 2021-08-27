@@ -1,19 +1,32 @@
----- Building the Kernel -----
+Not building the kernel:
 
-    -> Build the latest version of the kernel following the steps here:
-        https://www.raspberrypi.org/documentation/computers/linux_kernel.html
+    - flash fresh OS
 
----- Prepping the Kernel ----
+    - Run the first step of kernel build to install all of those packages
+        - sudo apt install git bc bison flex libssl-dev make
 
-    -> Run PrepKernel.sh
+    - Run PrepKernel (I removed the lsat section that gets and makes the module, I pull driver from this repo and put it in scope manually)
 
----- Compiling the Module ----
-    -> Get the proper driver (RPi3.c version)
-    -> Move it where it needs to go
-    -> Fix errors (they've been fixed in this repo and commented to reflect that)
+    -> When you run make, you'll get the scope.c errors, then when those fixed you'll get module.lds error, then when that's fixed you'll get the final error about the #include (solutions are next steps)
+
+    -> Fix scope.c errors (they've been fixed in this repo and commented with 'Tom fix' to reflect that)
+        - timespec = timespec64
+        - timespec_to_ns = timespec64_to_ns
+        - getnswhatever = ktime_get_real_ts64
+
     -> Create the module.lds file by running:
         sudo cp usr/src/linux-source-5.10.52-v7+/scripts/module.lds.S  usr/src/linux-source-5.10.52-v7+/scripts/module.lds
-    -> Make that module file not read-only by running:
+
+    -> Make that module.lds file not read-only by running:
         sudo chmod -R ugo+rw /usr/src/linux-source-5.10.52-v7+/scripts/module.lds
-    -> Edit the module.lds file and remove the last line (29 I think, it's an include statement)
-    -> Execute run.sh from the root directory and that's where we get an invalid module error
+    
+    -> Edit the module.lds file and remove the last line (Line 29 - it's an include statement)
+
+    -> Run make and it will be successful
+
+    -> From the root run 'sudo insmod ./scope.ko' and get the invalid format error
+        - This is caused by the module and kernel having different versions
+        - You can verify this is the issue by running 'uname -r' to see the kernel version and 'modinfo scope.ko' to see the vermagic value. (They should match, but mine differ by the + at the end)
+        - To get extra debug info you can run 'dmesg -level-err' (might be --level, I forget). I forget exactly what the error it gives says but it'll say "scope: " and an error message... if you google that you'll see all this version stuff
+    Just need to figure out how to match the versions exactly. I don't know why the Pi version of the kernel gets that + appended, but I think that's the problem since the module doesn't have it.
+    Also possible that the problem is something else, but everytime I google this error the only solution is to match the version so if it's different I'm not sure what it would be. 

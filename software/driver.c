@@ -204,8 +204,7 @@ static void readScope(){
 	int Poff=0;
 	//int Fail=0;
 
-	// moved from line 203
-	// fix for the compiler warning of mixed declarations
+	// Tom Fix
 	struct timespec64 ts_start,ts_stop;
 
 	// Setting GPIOs
@@ -225,7 +224,8 @@ static void readScope(){
 	//Start time
 
 	set_current_state(TASK_UNINTERRUPTIBLE);
-	// Fixed with this: https://github.com/torvalds/linux/blob/e9a83bd2322035ed9d7dcf35753d3f984d76c6a5/Documentation/core-api/timekeeping.rst
+
+	// Tom Fix, fixed with this: https://github.com/torvalds/linux/blob/e9a83bd2322035ed9d7dcf35753d3f984d76c6a5/Documentation/core-api/timekeeping.rst
 	ktime_get_real_ts64(&ts_start);
 
 	while(counterline<REPEAT_SIZE){ 
@@ -272,7 +272,7 @@ static void readScope(){
 
 
 
-	//Stop time
+	// Tom fix
 	ktime_get_real_ts64(&ts_stop);
 
 	INP_GPIO(Puls_ON); 
@@ -284,6 +284,7 @@ static void readScope(){
 	local_irq_enable();
 
 	//save the time difference
+	// Tom Fix
 	dataStruct.time=timespec64_to_ns(&ts_stop)-timespec64_to_ns(&ts_start);//ns resolution
 	buf_p= dataStruct.Buffer;//cound maybe removed
 
