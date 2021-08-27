@@ -1,0 +1,19 @@
+---- Building the Kernel -----
+
+    -> Build the latest version of the kernel following the steps here:
+        https://www.raspberrypi.org/documentation/computers/linux_kernel.html
+
+---- Prepping the Kernel ----
+
+    -> Run PrepKernel.sh
+
+---- Compiling the Module ----
+    -> Get the proper driver (RPi3.c version)
+    -> Move it where it needs to go
+    -> Fix errors (they've been fixed in this repo and commented to reflect that)
+    -> Create the module.lds file by running:
+        sudo cp usr/src/linux-source-5.10.52-v7+/scripts/module.lds.S  usr/src/linux-source-5.10.52-v7+/scripts/module.lds
+    -> Make that module file not read-only by running:
+        sudo chmod -R ugo+rw /usr/src/linux-source-5.10.52-v7+/scripts/module.lds
+    -> Edit the module.lds file and remove the last line (29 I think, it's an include statement)
+    -> Execute run.sh from the root directory and that's where we get an invalid module error

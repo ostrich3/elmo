@@ -44,7 +44,7 @@ static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
 
 // depends on the RPi
 
-#define BCM2708_PERI_BASE       0x20000000 // value needs to be changed to 0x3F000000 for a RPi3. 0x20000000 works for Pi W.
+#define BCM2708_PERI_BASE       0x3F000000 // value needs to be changed to 0x3F000000 for a RPi3. 0x20000000 works for Pi W.
 #define GPIO_BASE               (BCM2708_PERI_BASE + 0x200000)	// GPIO controller 
 
 // Defines  GPIO macros to control GPIOs.
@@ -206,7 +206,7 @@ static void readScope(){
 
 	// moved from line 203
 	// fix for the compiler warning of mixed declarations
-	struct timespec ts_start,ts_stop;
+	struct timespec64 ts_start,ts_stop;
 
 	// Setting GPIOs
 	OUT_GPIO(Puls_ON); 
@@ -225,7 +225,8 @@ static void readScope(){
 	//Start time
 
 	set_current_state(TASK_UNINTERRUPTIBLE);
-	getnstimeofday(&ts_start);
+	// Fixed with this: https://github.com/torvalds/linux/blob/e9a83bd2322035ed9d7dcf35753d3f984d76c6a5/Documentation/core-api/timekeeping.rst
+	ktime_get_real_ts64(&ts_start);
 
 	while(counterline<REPEAT_SIZE){ 
 		Pon = 0; 
@@ -272,7 +273,7 @@ static void readScope(){
 
 
 	//Stop time
-	getnstimeofday(&ts_stop);
+	ktime_get_real_ts64(&ts_stop);
 
 	INP_GPIO(Puls_ON); 
 	INP_GPIO(Puls_OFF);
@@ -283,7 +284,7 @@ static void readScope(){
 	local_irq_enable();
 
 	//save the time difference
-	dataStruct.time=timespec_to_ns(&ts_stop)-timespec_to_ns(&ts_start);//ns resolution
+	dataStruct.time=timespec64_to_ns(&ts_stop)-timespec64_to_ns(&ts_start);//ns resolution
 	buf_p= dataStruct.Buffer;//cound maybe removed
 
 	//accessing memeber of the structure that is already pointer by its nature
